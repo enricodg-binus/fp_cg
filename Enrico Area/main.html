@@ -1,0 +1,153 @@
+<!DOCTYPE html> <!-- dhyatmika.suriyanto@gmail.com -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>week3</title>
+    <script type="text/javascript" src="babylon.custom.js"></script>
+    <link rel="stylesheet" href="style_canvas.css">
+  </head>
+  <body>
+    <canvas id="renderCanvas"></canvas>
+      <script>
+        document.addEventListener("DOMContentLoaded", function(){
+          var canvas, engine, isMovingLeft, isMovingRight, isJump, isMovingUp, isMovingDown;
+          canvas = document.getElementById("renderCanvas");
+
+          engine = new BABYLON.Engine(canvas, true);
+          var box;
+          function createScene() {
+            var scene = new BABYLON.Scene(engine);
+
+            var camera = new BABYLON.ArcRotateCamera("Camera",0,5,10,new BABYLON.Vector3(0,0,0), scene);
+            camera.setPosition(new BABYLON.Vector3(0,100,20));
+
+            camera.attachControl(canvas,true);
+
+            var mat = new BABYLON.StandardMaterial("material", scene);
+            //mat.diffuseColor = new BABYLON.Color3(1,0,0);
+            mat.diffuseTexture = new BABYLON.Texture("grass.png",scene);
+            //mat.specularColor = new BABYLON.Color3(0,1,0);
+            mat.specularTexture = new BABYLON.Texture("images.png",scene);
+            mat.specularPower = 25;
+
+            mat.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+
+            mat.alpha = 1;
+
+            // var light = new BABYLON.HemisphericLight("hlight", new BABYLON.Vector3(0,5,0), scene);
+
+            // var sun = BABYLON.Mesh.CreateSphere('sun', 16, 5, scene);
+            box = new BABYLON.Mesh.CreateBox("box",5,scene);
+          	box.position = new BABYLON.Vector3(9, 30, 50);
+
+            var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
+            light.range = 150;
+            light.parent = box;
+
+           	var hl = new BABYLON.HighlightLayer("hg", scene);
+            hl.innerGlow = false;
+            hl.addMesh(box, new BABYLON.Color3(.9, .9, .9));
+
+            var materialSphere = new BABYLON.StandardMaterial("sphere1", scene);
+          	materialSphere.emissiveColor = new BABYLON.Color3(1.0, 1.0, 0.7);
+          	box.material = materialSphere;
+
+          	var torus = BABYLON.Mesh.CreateTorus("torus", 12, 3, 24, scene);
+          	torus.position = new BABYLON.Vector3(0, 20, 50);
+          	torus.setPivotMatrix(BABYLON.Matrix.Translation(-12,0,0));
+
+            var gravity = new BABYLON.Vector3(0,-9.81,0);
+            physicsEngine = new BABYLON.CannonJSPlugin();
+
+            scene.enablePhysics(gravity, physicsEngine);
+
+            ground = new BABYLON.Mesh.CreateGround("ground",16*30,16*30,30,scene);
+            ground.material = mat;
+            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground,
+            BABYLON.PhysicsImpostor.BoxImpostor, {mass:0,restitution:0.2,friction:0.2},scene)
+
+            var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+          	shadowGenerator.getShadowMap().renderList.push(torus);
+          	// shadowGenerator.getShadowMap().renderList.push(tube);
+          	ground.receiveShadows = true;
+          	shadowGenerator.usePoissonSampling = true;
+
+            // box = new BABYLON.Mesh.CreateBox("box",1.0,scene);
+            // box.position = new BABYLON.Vector3(0,2,0);
+            // box.material = mat;
+            box.physicsImpostor = new BABYLON.PhysicsImpostor(box,
+            BABYLON.PhysicsImpostor.BoxImpostor, {mass: 1, restitution: 0.5, friction: 0.5},scene)
+
+            scene.beforeRender=()=>{
+                torus.rotation.y += .01;
+            }
+
+            return scene;
+          }
+          var scene = createScene();
+
+          window.onkeyup = window.onkeydown = function(event){
+            //alert(event.keyCode);
+            if(event.keyCode == 65){
+              isMovingLeft = event.type == 'keydown';
+            }
+            if(event.keyCode == 32){
+              isJump = event.type == 'keydown';
+            }
+            if(event.keyCode == 68){
+              isMovingRight = event.type == 'keydown';
+            }
+            if(event.keyCode == 87){
+              isMovingUp = event.type == 'keydown';
+            }
+            if(event.keyCode == 83){
+              isMovingDown = event.type == 'keydown';
+            }
+          }
+
+          engine.runRenderLoop(function(){
+            if(isJump){
+              box.physicsImpostor.applyImpulse(new BABYLON.Vector3(0,1,0),
+              box.getAbsolutePosition());
+            }
+
+            else if(isMovingLeft){
+              box.physicsImpostor.applyImpulse(new BABYLON.Vector3(1,0,0),
+              box.getAbsolutePosition());
+            }
+
+            else if(isMovingRight){
+              box.physicsImpostor.applyImpulse(new BABYLON.Vector3(-1,0,0),
+              box.getAbsolutePosition());
+            }
+
+            else if(isMovingUp){
+              box.physicsImpostor.applyImpulse(new BABYLON.Vector3(0,0,-1),
+              box.getAbsolutePosition());
+            }
+
+            else if(isMovingDown){
+              box.physicsImpostor.applyImpulse(new BABYLON.Vector3(0,0,1),
+              box.getAbsolutePosition());
+            }
+
+            // if(box.physicsImpostor.getLinearVelocity().x >= 5){
+            // box.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(5,0,0));
+            // }
+            // if(box.physicsImpostor.getLinearVelocity().x <= -5){
+            //   box.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(-5,0,0));
+            // }
+            // if(box.physicsImpostor.getLinearVelocity().z >= 5){
+            //   box.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0,0,5));
+            // }
+            // if(box.physicsImpostor.getLinearVelocity().z <= -5){
+            //   box.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0,0,-5));
+            // }
+
+            scene.render();
+          });
+        });
+
+        </script>
+  </body>
+</html>
