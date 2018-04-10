@@ -19,7 +19,7 @@
             var scene = new BABYLON.Scene(engine);
 
             var camera = new BABYLON.ArcRotateCamera("Camera",0,5,10,new BABYLON.Vector3(0,0,0), scene);
-            camera.setPosition(new BABYLON.Vector3(0,100,20));
+            camera.setPosition(new BABYLON.Vector3(10,50,150));
 
             camera.attachControl(canvas,true);
 
@@ -40,6 +40,8 @@
             box = new BABYLON.Mesh.CreateBox("box",5,scene);
           	box.position = new BABYLON.Vector3(9, 30, 50);
 
+            var glob_light = new BABYLON.HemisphericLight("hlight", new BABYLON.Vector3(0,0,0), scene);
+
             var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(0, 0, 0), scene);
             light.range = 150;
             light.parent = box;
@@ -50,11 +52,27 @@
 
             var materialSphere = new BABYLON.StandardMaterial("sphere1", scene);
           	materialSphere.emissiveColor = new BABYLON.Color3(1.0, 1.0, 0.7);
-          	box.material = materialSphere;
+          	box.material = mat;
 
           	var torus = BABYLON.Mesh.CreateTorus("torus", 12, 3, 24, scene);
           	torus.position = new BABYLON.Vector3(0, 20, 50);
           	torus.setPivotMatrix(BABYLON.Matrix.Translation(-12,0,0));
+
+            var tube = BABYLON.Mesh.CreateTube("tube",
+            [
+                new BABYLON.Vector3(0, 5, 50),
+                new BABYLON.Vector3(0, 30, 50),
+                new BABYLON.Vector3(1, 32, 50),
+                new BABYLON.Vector3(2, 34, 50),
+                new BABYLON.Vector3(3, 35, 50),
+                new BABYLON.Vector3(7, 35, 50),
+                new BABYLON.Vector3(8, 34, 50),
+                new BABYLON.Vector3(9, 32, 50),
+                new BABYLON.Vector3(9, 30, 50)
+                ],
+            1, 9, null, BABYLON.Mesh.CAP_ALL, scene);
+            tube.receiveShadows = true;
+            tube.position = new BABYLON.Vector3(0,-10,9);
 
             var gravity = new BABYLON.Vector3(0,-9.81,0);
             physicsEngine = new BABYLON.CannonJSPlugin();
@@ -68,7 +86,7 @@
 
             var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
           	shadowGenerator.getShadowMap().renderList.push(torus);
-          	// shadowGenerator.getShadowMap().renderList.push(tube);
+          	shadowGenerator.getShadowMap().renderList.push(tube);
           	ground.receiveShadows = true;
           	shadowGenerator.usePoissonSampling = true;
 
