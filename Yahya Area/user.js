@@ -5,6 +5,11 @@ document.addEventListener("DOMContentLoaded", function(){
     let engine = new BABYLON.Engine(canvas, true);
     let scene = new BABYLON.Scene(engine);
 
+    // Load debugger
+    BABYLON.DebugLayer.InspectorURL = 'lib/babylon.inspector.bundle.js';
+    scene.debugLayer.show();
+
+    // Physics
     gravity = new BABYLON.Vector3(0, -9.81, 0);
     physicsEngine = new BABYLON.CannonJSPlugin();
     scene.enablePhysics(gravity, physicsEngine);
